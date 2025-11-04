@@ -1,0 +1,83 @@
+import pinecone
+from openai import OpenAI
+from typing import List
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+# ---------- CONFIGURATION ----------
+PINECONE_API_KEY = "YOUR_PINECONE_API_KEY"
+OPENAI_API_KEY = "YOUR_OPENAI_API_KEY"
+INDEX_NAME = "your-index-name"
+EMBED_MODEL = "text-embedding-3-small"  # or "text-embedding-3-large"
+
+# Optional: LLaMA model (only used if model_name == "llama")
+LLAMA_MODEL = "meta-llama/Llama-3.1-70b-instruct"
+
+# ---------- SETUP ----------
+client = OpenAI(api_key=OPENAI_API_KEY)
+pinecone.init(api_key=PINECONE_API_KEY, environment="gcp-starter")
+index = pinecone.Index(INDEX_NAME)
+
+# ---------- FUNCTIONS ----------
+
+def get_context_from_rag(query: str, top_k: int = 5) -> str:
+    """Retrieve relevant context from the RAG (Vector DB)."""
+    query_embed = client.embeddings.create(
+        input=[query], model=EMBED_MODEL
+    ).data[0].embedding
+
+    search_results = index.query(query_embed, top_k=top_k, include_metadata=True)
+    contexts = [item['metadata']['text'] for item in search_results['matches']]
+    return "\n\n---\n\n".join(contexts)
+
+
+def run_model(model_name: str, query: str, context: str) -> str:
+    """Run a query with a given model (GPT or LLaMA) and return its response."""
+    augmented_query = f"Context:\n{context}\n\n-----\n\nQuestion:\n{query}\n\nAnswer:"
+
+    if model_name in ["gpt-4o", "gpt-3.5-turbo"]:
+        # --- Use OpenAI GPT models ---
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": "You are a bioinformatics assistant. Use references if available."},
+                {"role": "user", "content": augmented_query},
+            ],
+        )
+        return response.choices[0].message.content
+
+    elif model_name.lower().startswith("llama"):
+        # --- Use local LLaMA models ---
+        tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL)
+        model = AutoModelForCausalLM.from_pretrained(
+            LLAMA_MODEL,
+            device_map="auto",
+            torch_dtype=torch.float16
+        )
+        inputs = tokenizer(augmented_query, return_tensors="pt").to("cuda")
+        outputs = model.generate(**inputs, max_new_tokens=500)
+        return tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    else:
+        raise ValueError(f"Unsupported model: {model_name}")
+
+
+def query_rag_with_model(query: str, model_name: str) -> str:
+    """Full RAG + LLM pipeline for a given model."""
+    print(f"\n🔍 Running query on model: {model_name}")
+    context = get_context_from_rag(query)
+    answer = run_model(model_name, query, context)
+    print(f"\n🧠 Answer from {model_name}:\n{answer}\n")
+    return answer
+
+
+# ---------- MAIN EXECUTION ----------
+if __name__ == "__main__":
+    question = "Which bacterial species are involved in butyrate production in the human gut?"
+
+    # You can loop through all models you want to test
+    models_to_test = ["gpt-3.5-turbo", "gpt-4o", "llama"]
+
+    results = {}
+    for model in models_to_test:
+        results[model] = query_rag_with_model(question, model)
