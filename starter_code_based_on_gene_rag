@@ -1,4 +1,4 @@
-# Code Mapping - Vector Storage init
+#Code Mapping - Vector Storage init
 import pinecone
 
 PINECONE_API_KEY = "YOUR_PINECONE_API_KEY"
@@ -7,20 +7,19 @@ INDEX_NAME = "your-index-name"  # The RAG index you already built
 # Connect to Pinecone
 pinecone.init(
     api_key=PINECONE_API_KEY,
-    environment="gcp-starter"  # or your Pinecone environment
+    environment="gcp-starter"    # or your Pinecone environment
 )
 
 # Get a handle to the existing index
 index = pinecone.Index(INDEX_NAME)
-# ------------------------------------------------------------------------------------------------------------------
-# Retrieval Agent – finding relevant knowledge
+#------------------------------------------------------------------------------------------------------------------
+#Retrieval Agent – finding relevant knowledge
 from openai import OpenAI
 
 OPENAI_API_KEY = "YOUR_OPENAI_API_KEY"
 EMBED_MODEL = "text-embedding-3-small"  # Or 3-large
 
 client = OpenAI(api_key=OPENAI_API_KEY)
-
 
 def get_context_from_rag(query: str, top_k: int = 5) -> str:
     """Retrieve relevant context (text chunks) from the vector database."""
@@ -43,10 +42,9 @@ def get_context_from_rag(query: str, top_k: int = 5) -> str:
     # 4. Join them into one big context string with separators
     return "\n\n---\n\n".join(contexts)
 
-
-# --------------------------------------------------------------------------------------------------------------
-# Response Generation – building the “augmented prompt”
-# We intigrate both the user query and the retrival data from the RAG
+#--------------------------------------------------------------------------------------------------------------
+#Response Generation – building the “augmented prompt”
+#We intigrate both the user query and the retrival data from the RAG
 def run_model(model_name: str, query: str, context: str) -> str:
     """Run a query with a given model (GPT or LLaMA) using the retrieved context."""
     # Build the augmented prompt
@@ -56,15 +54,12 @@ def run_model(model_name: str, query: str, context: str) -> str:
         f"Question:\n{query}\n\n"
         "Answer:"
     )
-
-
-# --------------------------------------------------------------------------------------------------------------
-# LLM Integration – unified interface for all models
+#--------------------------------------------------------------------------------------------------------------
+#LLM Integration – unified interface for all models
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 LLAMA_MODEL = "meta-llama/Llama-3.1-70b-instruct"
-
 
 def run_model(model_name: str, query: str, context: str) -> str:
     """Run a query with a given model (GPT or LLaMA) and return its response."""
@@ -110,25 +105,23 @@ def run_model(model_name: str, query: str, context: str) -> str:
     else:
         raise ValueError(f"Unsupported model: {model_name}")
 
-
-# ---------------------------------------------------------------------------------------------------------------
-# Full Pipeline per question
+#---------------------------------------------------------------------------------------------------------------
+#Full Pipeline per question
 def query_rag_with_model(query: str, model_name: str) -> str:
     """Full RAG → LLM pipeline for a given model."""
     print(f"\n🔍 Running query on model: {model_name}")
-
+    
     # 1. Retrieve context from RAG
     context = get_context_from_rag(query)
-
+    
     # 2. Run model with context
     answer = run_model(model_name, query, context)
-
+    
     print(f"\n🧠 Answer from {model_name}:\n{answer}\n")
     return answer
 
-
-# ---------------------------------------------------------------------------------------------------------------
-# The main function
+#---------------------------------------------------------------------------------------------------------------
+#The main function
 if __name__ == "__main__":
     question = "Which bacterial species are involved in butyrate production in the human gut?"
 
@@ -137,3 +130,5 @@ if __name__ == "__main__":
     results = {}
     for model in models_to_test:
         results[model] = query_rag_with_model(question, model)
+
+
