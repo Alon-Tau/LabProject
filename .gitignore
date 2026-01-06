@@ -1,0 +1,48 @@
+# -----------------
+# Python
+# -----------------
+__pycache__/
+*.pyc
+*.pyo
+
+# -----------------
+# VS Code
+# -----------------
+.vscode/
+
+# -----------------
+# Environments
+# -----------------
+conda_envs/
+.env
+.venv/
+venv/
+
+# -----------------
+# Data & corpora
+# -----------------
+data/
+new_corpus/
+corpus/
+corpus_chunks/
+vectorstore*/
+analysis_graphs/
+
+# -----------------
+# Logs & temp files
+# -----------------
+*.log
+*.lotmux
+*.out
+*.err
+
+# -----------------
+# Generated / analysis outputs
+# -----------------
+*.csv
+
+# -----------------
+# OS
+# -----------------
+.DS_Store
+
