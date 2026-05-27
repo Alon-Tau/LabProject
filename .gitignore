@@ -40,9 +40,10 @@ analysis_graphs/
 # Generated / analysis outputs
 # -----------------
 *.csv
+preflight_report.json
+preflight_issues.txt
 
 # -----------------
 # OS
 # -----------------
 .DS_Store
-
