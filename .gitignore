@@ -1,49 +1,37 @@
-# -----------------
 # Python
-# -----------------
 __pycache__/
 *.pyc
 *.pyo
+.pytest_cache/
 
-# -----------------
-# VS Code
-# -----------------
-.vscode/
-
-# -----------------
 # Environments
-# -----------------
 conda_envs/
 .env
 .venv/
 venv/
 
-# -----------------
-# Data & corpora
-# -----------------
+# Corpus / data / vector store / entity index (not tracked here)
 data/
 new_corpus/
 corpus/
 corpus_chunks/
 vectorstore*/
-analysis_graphs/
 
-# -----------------
-# Logs & temp files
-# -----------------
+# Eval questions & run outputs (not tracked here)
+eval/
+runs/
+runs_v2_clean/
+audit_out/
+
+# Logs & generated reports
 *.log
-*.lotmux
 *.out
 *.err
-
-# -----------------
-# Generated / analysis outputs
-# -----------------
 *.csv
 preflight_report.json
 preflight_issues.txt
 
-# -----------------
-# OS
-# -----------------
+# IDE / OS
+.idea/
+.vscode/
 .DS_Store

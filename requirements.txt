@@ -1,0 +1,20 @@
+# Core
+openai
+anthropic
+google-genai
+requests
+tenacity
+tiktoken
+
+# Retrieval / embeddings / reranking
+chromadb
+sentence-transformers
+numpy
+
+# Entity / vocabulary matching (bouncer/)
+pyahocorasick
+tqdm
+
+# NOTE: versions are not pinned. Run `pip freeze` in the working environment
+# on the server and pin exact versions here before treating this as a
+# reproducible build.
